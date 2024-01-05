@@ -1,5 +1,7 @@
 package kr.spring.board.controller;
 
+import java.util.List;
+
 import javax.validation.Valid;
 
 import org.slf4j.Logger;
@@ -11,10 +13,12 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.ModelAndView;
 
 import kr.spring.board.service.BoardService;
 import kr.spring.board.vo.BoardVO;
+import kr.spring.util.PageUtil;
 
 @Controller
 public class BoardController {
@@ -60,15 +64,26 @@ public class BoardController {
 		
 		//글 등록
 		boardService.insertBoard(boardVO);
-		
 		return "redirect:/list.do";
 	}
 	
-	
-	
 	//초기화면 불러오기
 	@RequestMapping("/list.do")
-	public ModelAndView process() {
+	public ModelAndView process(@RequestParam(value="pageNum",defaultValue="1") int currentPage) {
+		
+		int count = boardService.getBoardCount();
+		
+		log.debug("pageNum : " + currentPage);
+		log.debug("count : " + count);
+		
+		//페이지 처리
+		PageUtil page = new PageUtil(currentPage, count, 10, 10, "list.do");
+		//목록 읽어오기
+		List<BoardVO> list = null;
+		
+		if(count > 0) {
+			list = boardService.getBoardList(page.getStartRow(), page.getEndRow());
+		}
 		
 		ModelAndView mav = new ModelAndView();
 		mav.setViewName("selectList"); //뷰이름 지정
