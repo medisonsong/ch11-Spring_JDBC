@@ -18,6 +18,9 @@ public class BoardDAOImpl implements BoardDAO{
 	private static final String SELECT_COUNT_SQL = "SELECT COUNT(*) FROM aboard";
 	private static final String SELECT_LIST_SQL = "SELECT * FROM (SELECT a.*,rownum rnum FROM (SELECT * FROM aboard ORDER BY reg_date DESC)a) "
 													+ "WHERE rnum >= ? AND rnum <= ?";
+	private static final String SELECT_DETAIL_SQL = "SELECT * FROM aboard WHERE num=?";
+	private static final String UPDATE_SQL = "UPDATE aboard SET writer=?,title=?,content=? WHERE num=?";
+	private static final String DELETE_SQL = "DELETE FROM aboard WHERE num=?";
 	
 	//자바빈에 한건의 레코드 매핑
 	private RowMapper<BoardVO> rowMapper = new RowMapper<BoardVO>() {
@@ -38,9 +41,8 @@ public class BoardDAOImpl implements BoardDAO{
 
 	@Override
 	public void insertBoard(BoardVO board) {
-		//update = insert,delete,update 셋다 처리함
 		jdbcTemplate.update(INSERT_SQL, 
-				new Object[] {board.getWriter(),board.getTitle(),board.getPasswd(),board.getContent()}); //sql문,?에 전달할 데이터 (object배열로 생성)
+				new Object[] {board.getWriter(),board.getTitle(),board.getPasswd(),board.getContent()}); //sql문,?에데이터바인딩(object배열로 생성)
 	}
 
 	@Override
@@ -51,26 +53,24 @@ public class BoardDAOImpl implements BoardDAO{
 
 	@Override
 	public List<BoardVO> getBoardList(int startRow, int endRow) {
-		List<BoardVO> list = jdbcTemplate.query(SELECT_LIST_SQL, new Object[] {startRow, endRow}, rowMapper); //sql문,rnum(?에데이터바인딩),rowMapper
+		List<BoardVO> list = jdbcTemplate.query(SELECT_LIST_SQL, new Object[] {startRow, endRow}, rowMapper); //sql문,rnum(?에데이터바인딩),인자(rowMapper)
 		return list;
 	}
 
 	@Override
 	public BoardVO getBoard(int num) {
-		// TODO Auto-generated method stub
-		return null;
+		BoardVO board = jdbcTemplate.queryForObject(SELECT_DETAIL_SQL, new Object[] {num}, rowMapper); //sql문,?데이터바인딩,인자(rowMapper)
+		return board;
 	}
 
 	@Override
 	public void updateBoard(BoardVO board) {
-		// TODO Auto-generated method stub
-		
+		jdbcTemplate.update(UPDATE_SQL, new Object[] {board.getWriter(),board.getTitle(),board.getContent(),board.getNum()});
 	}
 
 	@Override
 	public void deleteBoard(int num) {
-		// TODO Auto-generated method stub
-		
+		jdbcTemplate.update(DELETE_SQL, new Object[] {num});
 	}
 
 }
